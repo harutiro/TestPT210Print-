@@ -62,9 +62,14 @@ class MainActivity : ComponentActivity() {
                                     Text("test Connect")
                                 }
                                 Button(onClick = {
-                                    posViewModel?.print(it)
+                                    posViewModel?.printImage(it)
                                 }) {
-                                    Text("バーコード接続")
+                                    Text("画像の印刷")
+                                }
+                                Button(onClick = {
+                                    posViewModel?.closeConnection(it)
+                                }) {
+                                    Text("コネクション解除")
                                 }
                             }
                         }

@@ -13,6 +13,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
@@ -20,9 +21,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
+import com.android.print.sdk.Barcode
+import com.android.print.sdk.CanvasPrint
+import com.android.print.sdk.FontProperty
 import com.android.print.sdk.PrinterConstants
 import com.android.print.sdk.PrinterConstants.Connect
 import com.android.print.sdk.PrinterInstance
+import com.android.print.sdk.PrinterType
 import java.io.IOException
 
 
@@ -36,9 +41,6 @@ class PosViewModel(private val context: Context): ViewModel(){
     val TAG = "PosViewModel"
 
     var printer:PrinterInstance? = null
-    var mDevice:BluetoothDevice? = null
-    var rePair = false
-    var hasRegBoundReceiver = false
 
     private val receiver = object : BroadcastReceiver() {
         @SuppressLint("MissingPermission")
@@ -105,112 +107,9 @@ class PosViewModel(private val context: Context): ViewModel(){
     }
 
     @SuppressLint("MissingPermission")
-    fun open(device: BluetoothDevice){
-        if (device.getBondState() == BluetoothDevice.BOND_NONE) {
-            Log.i(TAG, "device.getBondState() is BluetoothDevice.BOND_NONE")
-            pairOrRePairDevice(false, device)
-        } else if (mDevice?.getBondState() == BluetoothDevice.BOND_BONDED) {
-            if (rePair) {
-                pairOrRePairDevice(true, device)
-            } else {
-                openPrinter()
-            }
-        }
-    }
+    fun printImage(device: BluetoothDevice?){
+        Log.d(TAG, "Printing with device: ${device?.name}")
 
-    // receive bound broadcast to open connect.
-    private val boundDeviceReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        @SuppressLint("MissingPermission")
-        override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED == action) {
-                val device = intent
-                    .getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-                if (mDevice?.equals(device) == true) {
-                    return
-                }
-                when (device!!.bondState) {
-                    BluetoothDevice.BOND_BONDING -> Log.i(TAG, "bounding......")
-                    BluetoothDevice.BOND_BONDED -> {
-                        Log.i(TAG, "bound success")
-                        // if bound success, auto init BluetoothPrinter. open
-                        // connect.
-                        if (hasRegBoundReceiver) {
-                            context.unregisterReceiver(this)
-                            hasRegBoundReceiver = false
-                        }
-                        openPrinter()
-                    }
-
-                    BluetoothDevice.BOND_NONE -> if (rePair) {
-                        rePair = false
-                        Log.i(TAG, "removeBond success, wait create bound.")
-                        pairOrRePairDevice(false, device)
-                    } else if (hasRegBoundReceiver) {
-                        context.unregisterReceiver(this)
-                        hasRegBoundReceiver = false
-                        // bond failed
-                        handler.obtainMessage(Connect.FAILED).sendToTarget()
-                        Log.i(TAG, "bound cancel")
-                    }
-
-                    else -> {}
-                }
-            }
-        }
-    }
-
-    private fun pairOrRePairDevice(isRePair: Boolean, device: BluetoothDevice): Boolean {
-        var success = false
-        try {
-            if (!hasRegBoundReceiver) {
-                mDevice = device
-                val boundFilter = IntentFilter(
-                    BluetoothDevice.ACTION_BOND_STATE_CHANGED
-                )
-                context.registerReceiver(boundDeviceReceiver, boundFilter)
-                hasRegBoundReceiver = true
-            }
-
-            if (isRePair) {
-                // cancel bond
-                val removeBondMethod = BluetoothDevice::class.java
-                    .getMethod("removeBond")
-                success = removeBondMethod.invoke(device) as Boolean
-                Log.i(TAG, "removeBond is success? : $success")
-            } else {
-                // Input password
-                // Method setPinMethod =
-                // BluetoothDevice.class.getMethod("setPin");
-                // setPinMethod.invoke(device, 1234);
-                // create bond
-                val createBondMethod = BluetoothDevice::class.java
-                    .getMethod("createBond")
-                success = createBondMethod.invoke(device) as Boolean
-                Log.i(TAG, "createBond is success? : $success")
-            }
-        } catch (e: java.lang.Exception) {
-            Log.i(TAG, "removeBond or createBond failed.")
-            e.printStackTrace()
-            success = false
-        }
-        return success
-    }
-
-    // use device to init printer.
-    private fun openPrinter() {
-        printer = PrinterInstance(context, mDevice, handler)
-        // default is gbk...
-        // mPrinter.setEncoding("gbk");
-        printer?.openConnection()
-    }
-
-    @SuppressLint("MissingPermission")
-    fun print(device: BluetoothDevice?){
-
-    }
-
-    fun printTest(device: BluetoothDevice?) {
         if (device == null) {
             Log.e(TAG, "BluetoothDevice is null")
             return
@@ -218,14 +117,22 @@ class PosViewModel(private val context: Context): ViewModel(){
 
         Thread {
             try {
-//                open(device)
-//                ConnectThread(device).start()
                 printer = PrinterInstance(context, device, handler)
                 printer?.openConnection()
                 printer?.init()
-                printer?.printText("Hello World")
-                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2);
-                printer?.closeConnection()
+
+                val cp = CanvasPrint()
+                cp.init(PrinterType.T9)
+
+                val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.image)
+                val resizedBitmap = printUtils.convertToBlackWhite(bitmap) // 適切なサイズに変換
+                Log.d("PrintUtils", "bitmap: $bitmap width: ${bitmap.width} height: ${bitmap.height}")
+                Log.d("PrintUtils", "resizedBitmap: $resizedBitmap width: ${resizedBitmap.width} height: ${resizedBitmap.height}")
+                cp.drawImage(resizedBitmap)
+
+                printer?.printText("Print Custom Image:\n")
+                printer?.printImage(cp.canvasImage)
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
             } catch (e: Exception) {
                 Log.e(TAG, "Error during printing", e)
             }
@@ -233,39 +140,44 @@ class PosViewModel(private val context: Context): ViewModel(){
     }
 
     @SuppressLint("MissingPermission")
-    private inner class ConnectThread(device: BluetoothDevice) : Thread() {
+    fun printTest(device: BluetoothDevice?) {
+        Log.d(TAG, "Printing with device: ${device?.name}")
 
-        val MY_UUID = java.util.UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
-
-        private val mmSocket: BluetoothSocket? by lazy(LazyThreadSafetyMode.NONE) {
-            device.createRfcommSocketToServiceRecord(MY_UUID)
+        if (device == null) {
+            Log.e(TAG, "BluetoothDevice is null")
+            return
         }
 
-        override fun run() {
-            // Cancel discovery because it otherwise slows down the connection.
-            bluetoothAdapter?.cancelDiscovery()
-            Log.d(TAG, "bluetoothAdapter?.cancelDiscovery()")
-
-            mmSocket?.let { socket ->
-                // Connect to the remote device through the socket. This call blocks
-                // until it succeeds or throws an exception.
-                socket.connect()
-
-                Log.d(TAG, "socket.connect() success")
-
-                // The connection attempt succeeded. Perform work associated with
-                // the connection in a separate thread.
-//                manageMyConnectedSocket(socket)
-            }
-        }
-
-        // Closes the client socket and causes the thread to finish.
-        fun cancel() {
+        Thread {
             try {
-                mmSocket?.close()
-            } catch (e: IOException) {
-                Log.e(TAG, "Could not close the client socket", e)
+                printer = PrinterInstance(context, device, handler)
+                printer?.openConnection()
+                printer?.init()
+                printer?.printText("Hello World")
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2);
+//                printer?.closeConnection()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during printing", e)
             }
+        }.start()
+    }
+
+    @SuppressLint("MissingPermission")
+    fun closeConnection(device: BluetoothDevice?) {
+        Log.d(TAG, "Printing with device: ${device?.name}")
+
+        if (device == null) {
+            Log.e(TAG, "BluetoothDevice is null")
+            return
         }
+
+        Thread {
+            try {
+                printer = PrinterInstance(context, device, handler)
+                printer?.closeConnection()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during printing", e)
+            }
+        }.start()
     }
 }

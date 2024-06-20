@@ -4,6 +4,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.ThumbnailUtils
+import android.util.Log
 import com.android.print.sdk.Barcode
 import com.android.print.sdk.CanvasPrint
 import com.android.print.sdk.FontProperty
@@ -183,15 +184,15 @@ class PrintUtils {
         cp.setFontProperty(fp)
         cp.drawText("Contains Arabic language:")
         // pg.drawText("温度的影响主要表现在两个方面温度的影响主要表现在两个方面温度的影响主要表现在两个方面温度的影响主要表现在两个方面");
-        fp.setFont(false, false, false, false, 30, null)
-        cp.setFontProperty(fp)
-        cp.drawText("ومن تكهناته إيمانه بإستحالة قياس السرعة اللحظية للجسيمات متناهية الصغر والتي تهتز عشوائياً في مختلف الإتجاهات بما يعرف باسم الحركة البراونية، لكن بعد قرن من الزمان، تمكن عالم يدعى مارك رايزن من تفنيد هذه المقولة عملياً بمعمل أبحاثه بجامعة تكساس وإستطاع قياس السرعة اللحظية لتلك الجسيمات، في خضم إختباراته لقانون التوزع المتساوي الذي يقرر أن طاقة حركة الجسيم تعتمد على حرارته بشكل بحت وليس على على كتلته أو حجمه، ")
-        cp.drawImage(
-            BitmapFactory.decodeResource(
-                resources,
-                R.drawable.ic_launcher_foreground
-            )
-        )
+//        fp.setFont(false, false, false, false, 30, null)
+//        cp.setFontProperty(fp)
+//        cp.drawText("ومن تكهناته إيمانه بإستحالة قياس السرعة اللحظية للجسيمات متناهية الصغر والتي تهتز عشوائياً في مختلف الإتجاهات بما يعرف باسم الحركة البراونية، لكن بعد قرن من الزمان، تمكن عالم يدعى مارك رايزن من تفنيد هذه المقولة عملياً بمعمل أبحاثه بجامعة تكساس وإستطاع قياس السرعة اللحظية لتلك الجسيمات، في خضم إختباراته لقانون التوزع المتساوي الذي يقرر أن طاقة حركة الجسيم تعتمد على حرارته بشكل بحت وليس على على كتلته أو حجمه، ")
+
+        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.image)
+        val resizedBitmap = convertToBlackWhite(bitmap) // 適切なサイズに変換
+        Log.d("PrintUtils", "bitmap: $bitmap width: ${bitmap.width} height: ${bitmap.height}")
+        Log.d("PrintUtils", "resizedBitmap: $resizedBitmap width: ${resizedBitmap.width} height: ${resizedBitmap.height}")
+        cp.drawImage(resizedBitmap)
 
         mPrinter.printText("Print Custom Image:\n")
         mPrinter.printImage(cp.canvasImage)
