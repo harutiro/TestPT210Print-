@@ -217,7 +217,7 @@ class PosViewModel(private val context: Context): ViewModel(){
                     PrinterConstants.Command.ALIGN_LEFT
                 )
                 printer?.setCharacterMultiple(0, 0)
-                sb.append("X(Twitter): @harutiro\n")
+                sb.append("X(Twitter): @minesu1224\n")
                 sb.append("Zenn: @harutiro\n")
                 sb.append("Qiita: @harutiro\n")
                 sb.append("GitHub: @harutiro\n")
