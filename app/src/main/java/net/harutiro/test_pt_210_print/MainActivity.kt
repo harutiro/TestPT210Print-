@@ -57,14 +57,24 @@ class MainActivity : ComponentActivity() {
                             items(posViewModel?.bluetoothDeviceList ?: emptyList()){
                                 Text(it.name ?: "null")
                                 Button(onClick = {
-                                    posViewModel?.printTest(it)
+                                    posViewModel?.printerConnect(it)
                                 }) {
-                                    Text("test Connect")
+                                    Text("Connect")
                                 }
                                 Button(onClick = {
-                                    posViewModel?.printImage(it)
+                                    posViewModel?.printTest()
+                                }) {
+                                    Text("testPrint")
+                                }
+                                Button(onClick = {
+                                    posViewModel?.printImage()
                                 }) {
                                     Text("画像の印刷")
+                                }
+                                Button(onClick = {
+                                    posViewModel?.printQRCode()
+                                }) {
+                                    Text("バーコードの印刷")
                                 }
                                 Button(onClick = {
                                     posViewModel?.closeConnection(it)

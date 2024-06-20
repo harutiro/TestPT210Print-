@@ -107,7 +107,7 @@ class PosViewModel(private val context: Context): ViewModel(){
     }
 
     @SuppressLint("MissingPermission")
-    fun printImage(device: BluetoothDevice?){
+    fun printerConnect(device: BluetoothDevice?){
         Log.d(TAG, "Printing with device: ${device?.name}")
 
         if (device == null) {
@@ -120,7 +120,15 @@ class PosViewModel(private val context: Context): ViewModel(){
                 printer = PrinterInstance(context, device, handler)
                 printer?.openConnection()
                 printer?.init()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during printing", e)
+            }
+        }.start()
+    }
 
+    fun printImage(){
+        Thread {
+            try {
                 val cp = CanvasPrint()
                 cp.init(PrinterType.T9)
 
@@ -139,23 +147,26 @@ class PosViewModel(private val context: Context): ViewModel(){
         }.start()
     }
 
-    @SuppressLint("MissingPermission")
-    fun printTest(device: BluetoothDevice?) {
-        Log.d(TAG, "Printing with device: ${device?.name}")
-
-        if (device == null) {
-            Log.e(TAG, "BluetoothDevice is null")
-            return
-        }
-
+    fun printQRCode() {
         Thread {
             try {
-                printer = PrinterInstance(context, device, handler)
-                printer?.openConnection()
-                printer?.init()
+                val barcode = Barcode(PrinterConstants.BarcodeType.QRCODE, 2, 3, 6, "No.123456")
+                printer?.printText("Print QR Code:\n")
+                printer?.printBarCode(barcode)
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during printing", e)
+            }
+        }.start()
+    }
+
+    @SuppressLint("MissingPermission")
+    fun printTest() {
+        Thread {
+            try {
                 printer?.printText("Hello World")
-                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2);
-//                printer?.closeConnection()
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
             } catch (e: Exception) {
                 Log.e(TAG, "Error during printing", e)
             }
@@ -175,6 +186,7 @@ class PosViewModel(private val context: Context): ViewModel(){
             try {
                 printer = PrinterInstance(context, device, handler)
                 printer?.closeConnection()
+                printer = null
             } catch (e: Exception) {
                 Log.e(TAG, "Error during printing", e)
             }
