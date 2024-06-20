@@ -111,10 +111,10 @@ fun Greeting(
             Text("Start Bluetooth Search")
         }
         Button(onClick = onGetBluetoothDeviceList) {
-            Text("Get Bluetooth Device List")
+            Text("BLEデバイスを検索する")
         }
         Button(onClick = getBluetoothDeviceList) {
-            Text("Get Bluetooth Device List")
+            Text("端末にペアリング済み一覧")
         }
     }
 }
