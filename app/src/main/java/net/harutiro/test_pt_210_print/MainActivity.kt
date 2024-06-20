@@ -77,6 +77,11 @@ class MainActivity : ComponentActivity() {
                                     Text("バーコードの印刷")
                                 }
                                 Button(onClick = {
+                                    posViewModel?.printBusinessCard()
+                                }) {
+                                    Text("自己紹介を印刷")
+                                }
+                                Button(onClick = {
                                     posViewModel?.closeConnection(it)
                                 }) {
                                     Text("コネクション解除")
