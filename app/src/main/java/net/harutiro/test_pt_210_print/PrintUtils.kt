@@ -188,7 +188,7 @@ class PrintUtils {
 //        cp.setFontProperty(fp)
 //        cp.drawText("ومن تكهناته إيمانه بإستحالة قياس السرعة اللحظية للجسيمات متناهية الصغر والتي تهتز عشوائياً في مختلف الإتجاهات بما يعرف باسم الحركة البراونية، لكن بعد قرن من الزمان، تمكن عالم يدعى مارك رايزن من تفنيد هذه المقولة عملياً بمعمل أبحاثه بجامعة تكساس وإستطاع قياس السرعة اللحظية لتلك الجسيمات، في خضم إختباراته لقانون التوزع المتساوي الذي يقرر أن طاقة حركة الجسيم تعتمد على حرارته بشكل بحت وليس على على كتلته أو حجمه، ")
 
-        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.image)
+        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.ramen)
         val resizedBitmap = convertToBlackWhite(bitmap) // 適切なサイズに変換
         Log.d("PrintUtils", "bitmap: $bitmap width: ${bitmap.width} height: ${bitmap.height}")
         Log.d("PrintUtils", "resizedBitmap: $resizedBitmap width: ${resizedBitmap.width} height: ${resizedBitmap.height}")

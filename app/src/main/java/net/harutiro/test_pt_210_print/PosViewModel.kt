@@ -1,14 +1,9 @@
 package net.harutiro.test_pt_210_print
 
-import android.R.attr.data
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothSocket
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -17,18 +12,19 @@ import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.AndroidRuntimeException
 import android.util.Log
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
-import com.android.print.sdk.Barcode
 import com.android.print.sdk.CanvasPrint
-import com.android.print.sdk.FontProperty
 import com.android.print.sdk.PrinterConstants
-import com.android.print.sdk.PrinterConstants.Connect
 import com.android.print.sdk.PrinterInstance
 import com.android.print.sdk.PrinterType
-import java.io.IOException
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.WriterException
+import com.journeyapps.barcodescanner.BarcodeEncoder
 
 
 class PosViewModel(private val context: Context): ViewModel(){
@@ -132,7 +128,7 @@ class PosViewModel(private val context: Context): ViewModel(){
                 val cp = CanvasPrint()
                 cp.init(PrinterType.T9)
 
-                val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.image)
+                val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ramen)
                 val resizedBitmap = printUtils.convertToBlackWhite(bitmap) // 適切なサイズに変換
                 Log.d("PrintUtils", "bitmap: $bitmap width: ${bitmap.width} height: ${bitmap.height}")
                 Log.d("PrintUtils", "resizedBitmap: $resizedBitmap width: ${resizedBitmap.width} height: ${resizedBitmap.height}")
@@ -150,10 +146,32 @@ class PosViewModel(private val context: Context): ViewModel(){
     fun printQRCode() {
         Thread {
             try {
-                val barcode = Barcode(PrinterConstants.BarcodeType.QRCODE, 2, 3, 6, "No.123456")
-                printer?.printText("Print QR Code:\n")
-                printer?.printBarCode(barcode)
-                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+                //QRコード化する文字列
+                val data = "https://www.google.com"
+
+                //QRコード画像の大きさを指定(pixel)
+                val size = 400
+
+                try {
+                    val barcodeEncoder = BarcodeEncoder()
+                    //QRコードをBitmapで作成
+                    val bitmap = barcodeEncoder.encodeBitmap(data, BarcodeFormat.QR_CODE, size, size)
+
+                    val cp = CanvasPrint()
+                    cp.init(PrinterType.T9)
+
+                    val resizedBitmap = printUtils.convertToBlackWhite(bitmap) // 適切なサイズに変換
+                    Log.d("PrintUtils", "bitmap: $bitmap width: ${bitmap.width} height: ${bitmap.height}")
+                    Log.d("PrintUtils", "resizedBitmap: $resizedBitmap width: ${resizedBitmap.width} height: ${resizedBitmap.height}")
+                    cp.drawImage(resizedBitmap)
+
+                    printer?.printText("Print Custom Image:\n")
+                    printer?.printImage(cp.canvasImage)
+                    printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+
+                } catch (e: WriterException) {
+                    throw AndroidRuntimeException("Barcode Error.", e)
+                }
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error during printing", e)
