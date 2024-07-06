@@ -82,6 +82,16 @@ class MainActivity : ComponentActivity() {
                                     Text("自己紹介を印刷")
                                 }
                                 Button(onClick = {
+                                    posViewModel?.printMentorCard()
+                                }) {
+                                    Text("メンターカード")
+                                }
+                                Button(onClick = {
+                                    posViewModel?.printMentorSmallCard()
+                                }) {
+                                    Text("メンター縮小版カード")
+                                }
+                                Button(onClick = {
                                     posViewModel?.closeConnection(it)
                                 }) {
                                     Text("コネクション解除")

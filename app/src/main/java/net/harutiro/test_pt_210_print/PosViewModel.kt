@@ -263,6 +263,172 @@ class PosViewModel(private val context: Context): ViewModel(){
         }.start()
     }
 
+    fun printMentorCard(){
+        Thread {
+            try {
+
+                //写真を載せる
+                val cpImage = CanvasPrint()
+                cpImage.init(PrinterType.T9)
+
+                val bitmapImage = BitmapFactory.decodeResource(context.resources, R.drawable.my_image)
+                val resizedBitmapImage = printUtils.convertToBlackWhite(bitmapImage) // 適切なサイズに変換
+                cpImage.drawImage(resizedBitmapImage)
+
+                printer?.printImage(cpImage.canvasImage)
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+
+                val sb = StringBuffer()
+                // printer?.setPrinter(BluetoothPrinter.COMM_LINE_HEIGHT, 80);
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_CENTER
+                )
+
+                // タイトル部分
+                printer?.setCharacterMultiple(1, 1)
+                printer?.printText("harutiro\n")
+                printer?.setCharacterMultiple(0, 0)
+                printer?.printText("\n==============================\n")
+
+                // 主な情報
+                printer?.printText("\n I am a super Mobile Mentor\n")
+                printer?.printText("\n==============================\n")
+
+                // SNS情報など
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_LEFT
+                )
+                printer?.setCharacterMultiple(0, 0)
+                sb.append("Zenn: @harutiro\n")
+                sb.append("Qiita: @harutiro\n")
+                sb.append("GitHub: @harutiro\n")
+                sb.append("Facebook: @harutiro")
+                printer?.printText(sb.toString())
+                printer?.printText("\n==============================\n")
+
+                // WebサイトのQRコード
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_CENTER
+                )
+                //QRコード化する文字列
+                val data = "https://nagoya-mentors.com/mentor/haruchiro"
+
+                //QRコード画像の大きさを指定(pixel)
+                val size = 200
+
+                val barcodeEncoder = BarcodeEncoder()
+                //QRコードをBitmapで作成
+                val bitmap =
+                    barcodeEncoder.encodeBitmap(data, BarcodeFormat.QR_CODE, size, size)
+
+                val cp = CanvasPrint()
+                cp.init(PrinterType.T9)
+
+                val resizedBitmap = printUtils.convertToBlackWhite(bitmap) // 適切なサイズに変換
+                Log.d(
+                    "PrintUtils",
+                    "bitmap: $bitmap width: ${bitmap.width} height: ${bitmap.height}"
+                )
+                Log.d(
+                    "PrintUtils",
+                    "resizedBitmap: $resizedBitmap width: ${resizedBitmap.width} height: ${resizedBitmap.height}"
+                )
+                cp.drawImage(resizedBitmap)
+                printer?.printText("web: https://www.harutiro.net\n")
+                printer?.printImage(cp.canvasImage)
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during printing", e)
+            }
+        }.start()
+    }
+
+    fun printMentorSmallCard(){
+        Thread {
+            try {
+
+                //写真を載せる
+//                val cpImage = CanvasPrint()
+//                cpImage.init(PrinterType.T9)
+//
+//                val bitmapImage = BitmapFactory.decodeResource(context.resources, R.drawable.my_image)
+//                val resizedBitmapImage = printUtils.convertToBlackWhite(bitmapImage) // 適切なサイズに変換
+//                cpImage.drawImage(resizedBitmapImage)
+//
+//                printer?.printImage(cpImage.canvasImage)
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+
+                val sb = StringBuffer()
+                // printer?.setPrinter(BluetoothPrinter.COMM_LINE_HEIGHT, 80);
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_CENTER
+                )
+
+                // タイトル部分
+                printer?.setCharacterMultiple(1, 1)
+                printer?.printText("harutiro\n")
+                printer?.setCharacterMultiple(0, 0)
+                printer?.printText("\n==============================\n")
+
+                // 主な情報
+                printer?.printText("\n I am a super Mobile Mentor\n")
+                printer?.printText("\n==============================\n")
+
+                // SNS情報など
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_LEFT
+                )
+                printer?.setCharacterMultiple(0, 0)
+                sb.append("Zenn: @harutiro\n")
+                sb.append("Qiita: @harutiro\n")
+                sb.append("GitHub: @harutiro\n")
+                sb.append("Facebook: @harutiro")
+                printer?.printText(sb.toString())
+                printer?.printText("\n==============================\n")
+
+                // WebサイトのQRコード
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_CENTER
+                )
+                //QRコード化する文字列
+                val data = "https://nagoya-mentors.com/mentor/haruchiro"
+
+                //QRコード画像の大きさを指定(pixel)
+//                val size = 200
+//
+//                val barcodeEncoder = BarcodeEncoder()
+//                //QRコードをBitmapで作成
+//                val bitmap =
+//                    barcodeEncoder.encodeBitmap(data, BarcodeFormat.QR_CODE, size, size)
+//
+//                val cp = CanvasPrint()
+//                cp.init(PrinterType.T9)
+//
+//                val resizedBitmap = printUtils.convertToBlackWhite(bitmap) // 適切なサイズに変換
+//                Log.d(
+//                    "PrintUtils",
+//                    "bitmap: $bitmap width: ${bitmap.width} height: ${bitmap.height}"
+//                )
+//                Log.d(
+//                    "PrintUtils",
+//                    "resizedBitmap: $resizedBitmap width: ${resizedBitmap.width} height: ${resizedBitmap.height}"
+//                )
+//                cp.drawImage(resizedBitmap)
+                printer?.printText("web: $data\n")
+//                printer?.printImage(cp.canvasImage)
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during printing", e)
+            }
+        }.start()
+    }
+
     @SuppressLint("MissingPermission")
     fun printTest() {
         Thread {
