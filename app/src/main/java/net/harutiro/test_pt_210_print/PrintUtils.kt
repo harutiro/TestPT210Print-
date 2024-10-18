@@ -3,6 +3,8 @@ package net.harutiro.test_pt_210_print
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.media.ThumbnailUtils
 import android.util.Log
 import com.android.print.sdk.Barcode
@@ -15,6 +17,42 @@ import com.android.print.sdk.PrinterType
 import com.android.print.sdk.Table
 
 class PrintUtils {
+    fun textToBitmap(text: String, textSize: Float, textColor: Int): Bitmap {
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        paint.textSize = textSize
+        paint.color = textColor
+        paint.textAlign = Paint.Align.LEFT
+
+        val lines = text.split("\n") // テキストを改行で分割
+        val maxWidth = lines.maxOf { line -> paint.measureText(line).toInt() } // 最も長い行の幅を取得
+        val lineHeight = (-paint.ascent() + paint.descent()).toInt() // 1行の高さを取得
+        val height = (lineHeight * lines.size) // 全行の高さを合計
+
+        val bitmap = Bitmap.createBitmap(maxWidth, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        for ((index, line) in lines.withIndex()) {
+            val y = (lineHeight * index) - paint.ascent() // 各行のY座標を計算
+            canvas.drawText(line, 0f, y, paint) // 各行をCanvasに描画
+        }
+
+        return bitmap
+    }
+
+    fun autoLineBreak(text: String, lineLength: Int): String {
+        val sb = StringBuilder(text.length + text.length / lineLength)
+
+        var i = 0
+        while (i < text.length) {
+            if (i > 0 && i % lineLength == 0) {
+                sb.append("\n") // 改行を挿入
+            }
+            sb.append(text[i])
+            i++
+        }
+        return sb.toString()
+    }
+
     fun printText(resources: Resources, mPrinter: PrinterInstance) {
         mPrinter.init()
         mPrinter.printText(resources.getString(R.string.example_text))

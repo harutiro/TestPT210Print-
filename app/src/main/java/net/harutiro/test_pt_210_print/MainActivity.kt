@@ -92,6 +92,11 @@ class MainActivity : ComponentActivity() {
                                     Text("メンター縮小版カード")
                                 }
                                 Button(onClick = {
+                                    posViewModel?.printChinaCard()
+                                }) {
+                                    Text("中国版紹介カード")
+                                }
+                                Button(onClick = {
                                     posViewModel?.closeConnection(it)
                                 }) {
                                     Text("コネクション解除")

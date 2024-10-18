@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
@@ -315,6 +316,110 @@ class PosViewModel(private val context: Context): ViewModel(){
                 )
                 //QRコード化する文字列
                 val data = "https://nagoya-mentors.com/mentor/haruchiro"
+
+                //QRコード画像の大きさを指定(pixel)
+                val size = 200
+
+                val barcodeEncoder = BarcodeEncoder()
+                //QRコードをBitmapで作成
+                val bitmap =
+                    barcodeEncoder.encodeBitmap(data, BarcodeFormat.QR_CODE, size, size)
+
+                val cp = CanvasPrint()
+                cp.init(PrinterType.T9)
+
+                val resizedBitmap = printUtils.convertToBlackWhite(bitmap) // 適切なサイズに変換
+                Log.d(
+                    "PrintUtils",
+                    "bitmap: $bitmap width: ${bitmap.width} height: ${bitmap.height}"
+                )
+                Log.d(
+                    "PrintUtils",
+                    "resizedBitmap: $resizedBitmap width: ${resizedBitmap.width} height: ${resizedBitmap.height}"
+                )
+                cp.drawImage(resizedBitmap)
+                printer?.printText("web: https://www.harutiro.net\n")
+                printer?.printImage(cp.canvasImage)
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during printing", e)
+            }
+        }.start()
+    }
+
+    fun printChinaCard(){
+        Thread {
+            try {
+
+                //写真を載せる
+                val cpImage = CanvasPrint()
+                cpImage.init(PrinterType.T9)
+
+                val bitmapImage = BitmapFactory.decodeResource(context.resources, R.drawable.my_image)
+                val resizedBitmapImage = printUtils.convertToBlackWhite(bitmapImage) // 適切なサイズに変換
+                cpImage.drawImage(resizedBitmapImage)
+
+                printer?.printImage(cpImage.canvasImage)
+                printer?.setPrinter(PrinterConstants.Command.PRINT_AND_WAKE_PAPER_BY_LINE, 2)
+
+                val sb = StringBuffer()
+                // printer?.setPrinter(BluetoothPrinter.COMM_LINE_HEIGHT, 80);
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_CENTER
+                )
+
+                // タイトル部分
+                printer?.setCharacterMultiple(1, 1)
+                val cpTitleImage = CanvasPrint()
+                cpTitleImage.init(PrinterType.T9)
+                val autoLineBreakTitle = printUtils.autoLineBreak("牧野 遥斗",12)
+                val bitmapTitleImage = printUtils.textToBitmap(autoLineBreakTitle, 40f, Color.BLACK)
+                cpTitleImage.drawImage(bitmapTitleImage)
+                printer?.printImage(cpTitleImage.canvasImage)
+                printer?.printText("makino haruto\n")
+                printer?.setCharacterMultiple(0, 0)
+                printer?.printText("\n==============================\n")
+
+                // 主な情報
+                val cpDetailImage = CanvasPrint()
+                cpDetailImage.init(PrinterType.T9)
+                val autoLineBreakDetail = printUtils.autoLineBreak("我是牧野",12)
+                val bitmapDetailImage = printUtils.textToBitmap(autoLineBreakDetail, 30f, Color.BLACK)
+                cpDetailImage.drawImage(bitmapDetailImage)
+                printer?.printImage(cpDetailImage.canvasImage)
+                printer?.printText("i am makino haruto\n\n")
+
+                val cpDetailImage2 = CanvasPrint()
+                cpDetailImage2.init(PrinterType.T9)
+                val autoLineBreakDetail2 = printUtils.autoLineBreak("我是一个伟大的程序员",12)
+                val bitmapDetailImage2 = printUtils.textToBitmap(autoLineBreakDetail2, 30f, Color.BLACK)
+                cpDetailImage2.drawImage(bitmapDetailImage2)
+                printer?.printImage(cpDetailImage2.canvasImage)
+                printer?.printText("I am a super Programmer\n")
+                printer?.printText("\n==============================\n")
+
+                // SNS情報など
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_LEFT
+                )
+                printer?.setCharacterMultiple(0, 0)
+                sb.append("X(Twitter): @minesu1224\n")
+                sb.append("Zenn: @harutiro\n")
+                sb.append("Qiita: @harutiro\n")
+                sb.append("GitHub: @harutiro\n")
+                sb.append("Facebook: @harutiro")
+                printer?.printText(sb.toString())
+                printer?.printText("\n==============================\n")
+
+                // WebサイトのQRコード
+                printer?.setPrinter(
+                    PrinterConstants.Command.ALIGN,
+                    PrinterConstants.Command.ALIGN_CENTER
+                )
+                //QRコード化する文字列
+                val data = "https://www.harutiro.net"
 
                 //QRコード画像の大きさを指定(pixel)
                 val size = 200
